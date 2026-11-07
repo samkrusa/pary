@@ -287,6 +287,8 @@ def main():
     ap.add_argument("--cache", default="tools/.cache")
     ap.add_argument("--only", type=int, default=None, help="id института")
     ap.add_argument("--refresh", action="store_true")
+    ap.add_argument("--force", action="store_true",
+                    help="записать данные, даже если групп стало сильно меньше")
     args = ap.parse_args()
 
     here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -295,9 +297,17 @@ def main():
     g_dir = os.path.join(out_dir, "g")
     os.makedirs(g_dir, exist_ok=True)
     os.makedirs(cache_dir, exist_ok=True)
-    # чистим прошлые сборки, чтобы не оставалось мусора
-    for old in glob.glob(os.path.join(g_dir, "*.json")):
-        os.remove(old)
+
+    # сколько групп было в прошлой сборке — для защиты от затирания
+    old_total = 0
+    old_index_path = os.path.join(out_dir, "index.json")
+    if os.path.exists(old_index_path):
+        try:
+            with open(old_index_path, encoding="utf-8") as fh:
+                old_meta = json.load(fh)
+            old_total = sum(int(i.get("n", 0)) for i in old_meta.get("institutes", []))
+        except Exception:  # noqa: BLE001
+            old_total = 0
 
     # две даты с разной чётностью
     today = dt.date.today()
@@ -378,6 +388,19 @@ def main():
                 })
                 total_lessons += len(lessons)
         print(f"{short}: готово ({len(index)} групп, {total_lessons} занятий)", flush=True)
+
+    # защита от сбоя: если групп стало резко меньше — не перезаписываем данные
+    if not args.only and not args.force and old_total >= 50:
+        if len(index) < old_total * 0.7:
+            print(f"! Похоже на сбой: было {old_total} групп, стало {len(index)}. "
+                  f"Данные не изменены (--force, чтобы перезаписать).", file=sys.stderr)
+            sys.exit(2)
+
+    # удаляем устаревшие файлы групп, которых больше нет
+    for old in glob.glob(os.path.join(g_dir, "*.json")):
+        name = os.path.basename(old)[:-5]
+        if name not in by_slug:
+            os.remove(old)
 
     # индекс по институтам: приложение грузит только нужный
     i_dir = os.path.join(out_dir, "i")
