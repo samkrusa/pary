@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1014" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Расписание занятий КНИТУ: группы, преподаватели, аудитории. Быстро и без лишнего.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Пары">
+<meta name="format-detection" content="telephone=no">
+<title>Пары — расписание КНИТУ</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <header class="topbar">
+    <button class="brand" id="groupBtn" type="button" aria-haspopup="dialog">
+      <span class="brand-mark" aria-hidden="true">П</span>
+      <span class="brand-text">
+        <span class="brand-name" id="groupName">Выбрать группу</span>
+        <span class="brand-sub" id="groupSub">КНИТУ · расписание</span>
+      </span>
+      <svg class="brand-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <button class="today" id="todayBtn" type="button">Сегодня</button>
+  </header>
+
+  <div class="weekbar">
+    <button class="arrow" id="prevWeek" type="button" aria-label="Предыдущая неделя">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="week-label" id="weekLabel">
+      <span class="week-dates">—</span>
+      <span class="week-parity"></span>
+    </div>
+    <button class="arrow" id="nextWeek" type="button" aria-label="Следующая неделя">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <nav class="days" id="days" aria-label="Дни недели"></nav>
+
+  <main class="content" id="content" aria-live="polite"></main>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-backdrop" data-close></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Выбор группы">
+    <div class="sheet-grip" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2>Группа</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Закрыть">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="searchInput" type="search" placeholder="Найти группу или институт" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="chips" id="instChips"></div>
+    <div class="sheet-list" id="groupList"></div>
+  </div>
+</div>
+
+<div class="install" id="install" hidden>
+  <span class="install-ico" aria-hidden="true">
+    <svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.6"/><path d="M11 18.5h2"/></svg>
+  </span>
+  <span class="install-text">
+    <b id="installTitle">Добавить на экран «Домой»</b>
+    <span id="installHint">Будет открываться как приложение</span>
+  </span>
+  <button class="install-btn" id="installAction" type="button" hidden>Установить</button>
+  <button class="install-close" id="installClose" type="button" aria-label="Скрыть">✕</button>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+.test/
+node_modules/
+package.json
+package-lock.json
+.npmcache/
+.chromeprofile/
+tools/.cache/
+__pycache__/
+*.pyc
