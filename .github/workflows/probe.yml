@@ -14,9 +14,11 @@ jobs:
 
       - name: Probe
         run: |
-          code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 https://www.kstu.ru/ || echo "ERR")
-          echo "curl=$code" > probe.txt
-          python3 -c "import ssl,urllib.request; ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname=False; ctx.verify_mode=ssl.CERT_NONE; ctx.maximum_version=ssl.TLSVersion.TLSv1_2; r=urllib.request.urlopen('https://www.kstu.ru/',timeout=30,context=ctx); print('python=OK',r.status,len(r.read()))" >> probe.txt 2>&1 || echo "python=ERR" >> probe.txt
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+          url="https://www.kstu.ru/www_F22grid.jsp?d=2026-11-02&f=320&l=0&t=0&k=1&x=www_GF1grid"
+          code=$(curl -sS -A "$UA" -o /dev/null -w "%{http_code}" --max-time 40 "$url" || echo "ERR")
+          echo "curl_schedule=$code" > probe.txt
+          python3 -c "import ssl,urllib.request; ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname=False; ctx.verify_mode=ssl.CERT_NONE; ctx.maximum_version=ssl.TLSVersion.TLSv1_2; req=urllib.request.Request('https://www.kstu.ru/www_F22grid.jsp?d=2026-11-02&f=320&l=0&t=0&k=1&x=www_GF1grid', headers={'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'}); r=urllib.request.urlopen(req,timeout=40,context=ctx); print('python_ua=OK',r.status,len(r.read()))" >> probe.txt 2>&1 || echo "python_ua=ERR" >> probe.txt
           cat probe.txt
 
       - name: Commit

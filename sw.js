@@ -1,6 +1,6 @@
 /* Кэш оболочки и расписаний: приложение открывается без сети. */
 
-const VERSION = "pary-v3";
+const VERSION = "pary-v4";
 const SHELL = [
   "./",
   "index.html",
