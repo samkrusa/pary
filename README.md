@@ -162,15 +162,21 @@ git push -u origin main
 
 ## Cloudflare Pages (бесплатно)
 
-1. Зарегистрироваться на <https://dash.cloudflare.com>.
-2. **Workers & Pages → Create → Pages → Connect to Git**, выбрать репозиторий.
-3. Build command — пусто, Output directory — `/`.
-4. **Deploy** → сайт на `https://pary.pages.dev`.
+Сайт задеплоен: **<https://pary-knrtu.pages.dev>**
 
-Файл `_headers` уже в корне: Cloudflare применит CSP, `X-Frame-Options`,
-`nosniff`, `Permissions-Policy` и HSTS автоматически.
+- Проект `pary-knrtu`, деплой прямая загрузка.
+- `_headers` в корне: CSP с `frame-ancestors 'none'`, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Permissions-Policy`, `Referrer-Policy`,
+  `HSTS includeSubDomains` — проверено снаружи.
+- Автодеплой: `.github/workflows/deploy-cloudflare.yml` на каждый push в `main`
+  (токен и Account ID лежат в GitHub Secrets).
 
-Можно и без панели — по API-токену:
+Важно: `*.pages.dev` в России может блокироваться по SNI — с части российских
+провайдеров соединение сбрасывается на TLS. Свой домен решает проблему:
+добавьте его в Cloudflare Pages → Custom domains, SNI будет уже ваш.
+GitHub Pages при этом остаётся рабочим основным адресом.
+
+Ручной деплой по токену:
 
 ```powershell
 $env:CLOUDFLARE_API_TOKEN = "..."
