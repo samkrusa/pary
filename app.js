@@ -54,6 +54,8 @@
     x.setHours(0, 0, 0, 0);
     return x;
   };
+  const safeSlug = (v) => typeof v === "string" && /^[a-z0-9-]+$/.test(v);
+
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
   }[c]));
@@ -186,6 +188,10 @@
   }
 
   async function selectGroup(g, opts = {}) {
+    if (!g || !safeSlug(g.file)) {
+      toast("Некорректная группа");
+      return;
+    }
     state.group = g;
     state.loading = true;
     render();
@@ -226,6 +232,8 @@
   }
 
   function render() {
+    const off = $("#offline");
+    if (off) off.hidden = navigator.onLine;
     renderHeader();
     renderWeek();
     renderDays();
@@ -270,7 +278,10 @@
       b.className = "day";
       b.dataset.date = ds;
       if (ds === today) b.classList.add("is-today");
-      if (ds === state.day) b.classList.add("is-active");
+      if (ds === state.day) {
+        b.classList.add("is-active");
+        b.setAttribute("aria-current", "date");
+      }
       if (state.data && dayHas(ds)) b.classList.add("has");
       b.innerHTML = `<span class="dow">${DOW[i]}</span><span class="num">${d.getDate()}</span><span class="dot"></span>`;
       b.addEventListener("click", () => {
@@ -391,21 +402,46 @@
     $("#searchInput").value = "";
     renderChips();
     renderGroupList();
+    sheet._lastFocus = document.activeElement;
     setTimeout(() => {
-      if (window.innerWidth > 720) $("#searchInput").focus();
+      const panel = sheet.querySelector(".sheet-panel");
+      if (panel) panel.focus();
     }, 120);
   }
 
   function closeSheet() {
-    $("#sheet").hidden = true;
+    const sheet = $("#sheet");
+    sheet.hidden = true;
     document.body.style.overflow = "";
+    const back = sheet._lastFocus;
+    if (back && typeof back.focus === "function") back.focus();
+  }
+
+  function trapFocus(e) {
+    if (e.key !== "Tab") return;
+    const sheet = $("#sheet");
+    if (sheet.hidden) return;
+    const panel = sheet.querySelector(".sheet-panel");
+    if (!panel) return;
+    const items = [...panel.querySelectorAll("button, input, a[href], [tabindex]:not([tabindex='-1'])")]
+      .filter((el) => !el.disabled && el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
   }
 
   function renderChips() {
     const wrap = $("#instChips");
     const chips = [{ id: null, name: "Все" }, ...state.institutes.map((i) => ({ id: i.id, name: i.id }))];
     wrap.innerHTML = chips.map((c) =>
-      `<button class="chip${state.sheetInst === c.id ? " is-active" : ""}" type="button" data-inst="${c.id ?? ""}">${esc(c.name)}</button>`
+      `<button class="chip${state.sheetInst === c.id ? " is-active" : ""}" type="button" data-inst="${esc(c.id ?? "")}">${esc(c.name)}</button>`
     ).join("");
     wrap.querySelectorAll(".chip").forEach((el) => {
       el.addEventListener("click", () => {
@@ -533,6 +569,11 @@
     });
 
     setupInstall();
+
+    addEventListener("online", render);
+    addEventListener("offline", render);
+
+    document.addEventListener("keydown", trapFocus);
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !$("#sheet").hidden) closeSheet();

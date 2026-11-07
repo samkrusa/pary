@@ -6,12 +6,12 @@
   --surface: #ffffff;
   --surface-2: #f1efe9;
   --ink: #15171c;
-  --muted: #6f7480;
+  --muted: #666b76;
   --line: #e6e2d9;
   --accent: #2f5fe0;
   --accent-ink: #ffffff;
   --accent-soft: #e9efff;
-  --amber: #b45309;
+  --amber: #9a3412;
   --amber-soft: #fdf0d5;
   --green: #0b7a55;
   --green-soft: #dff3ea;
@@ -659,6 +659,18 @@ button { font: inherit; color: inherit; }
 /* ── Прочее ────────────────────────────────────────────── */
 
 [hidden] { display: none !important; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 

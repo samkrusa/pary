@@ -6,6 +6,15 @@
 <meta name="theme-color" content="#f6f5f2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e1014" media="(prefers-color-scheme: dark)">
 <meta name="description" content="Расписание занятий КНИТУ: группы, преподаватели, аудитории. Быстро и без лишнего.">
+<link rel="canonical" href="https://samkrusa.github.io/pary/">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Пары — расписание КНИТУ">
+<meta property="og:description" content="Расписание занятий КНИТУ: группы, преподаватели, аудитории. Работает офлайн.">
+<meta property="og:url" content="https://samkrusa.github.io/pary/">
+<meta property="og:image" content="https://samkrusa.github.io/pary/icon-512.png">
+<meta name="twitter:card" content="summary">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -21,6 +30,7 @@
 <body>
 
 <div class="app" id="app">
+  <h1 class="sr-only">Расписание занятий КНИТУ</h1>
 
   <header class="topbar">
     <button class="brand" id="groupBtn" type="button" aria-haspopup="dialog">
@@ -49,6 +59,8 @@
 
   <nav class="days" id="days" aria-label="Дни недели"></nav>
 
+  <div class="offline-note" id="offline" hidden>Нет сети — показаны сохранённые данные</div>
+
   <main class="content" id="content" aria-live="polite"></main>
 
   <footer class="foot" id="foot"></footer>
@@ -56,7 +68,7 @@
 
 <div class="sheet" id="sheet" hidden>
   <div class="sheet-backdrop" data-close></div>
-  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Выбор группы">
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Выбор группы" tabindex="-1">
     <div class="sheet-grip" aria-hidden="true"></div>
     <div class="sheet-head">
       <h2>Группа</h2>
@@ -66,7 +78,7 @@
     </div>
     <div class="search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-      <input id="searchInput" type="search" placeholder="Найти группу или институт" autocomplete="off" spellcheck="false">
+      <input id="searchInput" type="search" placeholder="Найти группу или институт" aria-label="Поиск группы" autocomplete="off" spellcheck="false">
     </div>
     <div class="chips" id="instChips"></div>
     <div class="sheet-list" id="groupList"></div>
