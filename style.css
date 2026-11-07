@@ -151,6 +151,32 @@ button { font: inherit; color: inherit; }
 
 .brand-chev { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
+.share {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color .15s ease, color .15s ease;
+}
+
+.share svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.share:hover { border-color: var(--accent); }
+.share:hover svg { stroke: var(--accent); }
+
 .today {
   flex: none;
   padding: 8px 13px;

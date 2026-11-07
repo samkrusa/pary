@@ -1,0 +1,39 @@
+name: probe-source
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probe
+        run: |
+          code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 https://www.kstu.ru/ || echo "ERR")
+          echo "curl=$code" > probe.txt
+          python3 - >> probe.txt 2>&1 <<'PY'
+import ssl, urllib.request
+ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE
+ctx.maximum_version = ssl.TLSVersion.TLSv1_2
+try:
+    r = urllib.request.urlopen("https://www.kstu.ru/", timeout=30, context=ctx)
+    print("python=OK", r.status, len(r.read()))
+except Exception as e:
+    print("python=ERR", type(e).__name__, str(e)[:120])
+PY
+          cat probe.txt
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add probe.txt
+          git commit -m "probe" || true
+          git push || true

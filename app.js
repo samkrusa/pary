@@ -137,7 +137,11 @@
       state.institutes = [];
     }
 
-    const saved = readSavedGroup();
+    let saved = readSavedGroup();
+    if (!saved) {
+      const cookieFile = readGroupCookie();
+      if (cookieFile) saved = await findGroupByFile(cookieFile);
+    }
     if (saved) {
       await selectGroup(saved, { silent: true });
     } else {
@@ -157,6 +161,19 @@
       const raw = localStorage.getItem("group");
       return raw ? JSON.parse(raw) : null;
     } catch (_) { return null; }
+  }
+
+  const GROUP_COOKIE = "pary_group";
+
+  function writeGroupCookie(file) {
+    const secure = location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = GROUP_COOKIE + "=" + encodeURIComponent(file) +
+      "; Max-Age=31536000; Path=/; SameSite=Lax" + secure;
+  }
+
+  function readGroupCookie() {
+    const m = document.cookie.match(new RegExp("(?:^|; )" + GROUP_COOKIE + "=([^;]*)"));
+    return m ? decodeURIComponent(m[1]) : null;
   }
 
   async function findGroupByFile(file) {
@@ -207,6 +224,10 @@
     try {
       localStorage.setItem("group", JSON.stringify(g));
     } catch (_) { /* ignore */ }
+    writeGroupCookie(g.file);
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
     history.replaceState(null, "", `#g=${g.file}`);
     render();
     if (!opts.silent) toast(`${g.g} · сохранено`);
@@ -250,6 +271,8 @@
       ? `${state.group.i}${course}`
       : "КНИТУ · расписание";
     document.title = state.group ? `${state.group.g} — Пары` : "Пары — расписание КНИТУ";
+    const share = $("#shareBtn");
+    if (share) share.hidden = !state.group;
   }
 
   function renderWeek() {
@@ -540,6 +563,7 @@
 
   function wireUI() {
     $("#groupBtn").addEventListener("click", openSheet);
+    $("#shareBtn").addEventListener("click", shareGroup);
     $("#todayBtn").addEventListener("click", () => {
       state.weekOffset = 0;
       state.day = isoOf(new Date());
@@ -643,6 +667,39 @@
     });
 
     if (isIOS) setTimeout(() => show("ios"), 3500);
+  }
+
+  async function shareGroup() {
+    if (!state.group) return;
+    const url = location.origin + location.pathname + "#g=" + state.group.file;
+    const title = "Расписание " + state.group.g + " — КНИТУ";
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch (_) { /* отменили — пробуем скопировать */ }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast("Ссылка на группу скопирована");
+      return;
+    } catch (_) { /* нет доступа к буферу — пробуем старый способ */ }
+
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.cssText = "position:fixed;top:0;left:-9999px;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      if (ok) {
+        toast("Ссылка на группу скопирована");
+        return;
+      }
+    } catch (_) { /* ignore */ }
+
+    window.prompt("Скопируй ссылку на группу:", url);
   }
 
   function setWeek(delta) {
