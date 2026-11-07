@@ -16,7 +16,7 @@
 param(
     [string]$Token = $env:CLOUDFLARE_API_TOKEN,
     [string]$AccountId = $env:CLOUDFLARE_ACCOUNT_ID,
-    [string]$Project = "pary"
+    [string]$Project = "pary-knrtu"
 )
 
 $ErrorActionPreference = "Stop"
