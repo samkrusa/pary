@@ -50,9 +50,4 @@ jobs:
 
       - name: Summary
         run: |
-          echo "groups: $(python - <<'PY'
-import json
-d=json.load(open('data/index.json',encoding='utf-8'))
-print(sum(i['n'] for i in d['institutes']))
-PY
-)" >> "$GITHUB_STEP_SUMMARY"
+          python -c "import json; d=json.load(open('data/index.json',encoding='utf-8')); print('groups:', sum(i['n'] for i in d['institutes']))" >> "$GITHUB_STEP_SUMMARY"
