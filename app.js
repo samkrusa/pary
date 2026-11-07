@@ -406,9 +406,12 @@
 
   function renderFoot() {
     const g = state.meta && state.meta.generated;
-    $("#foot").innerHTML = g
-      ? `Данные: <a href="https://www.kstu.ru" target="_blank" rel="noopener">kstu.ru</a> · обновлено ${esc(fmtGenerated(g))}`
-      : "Данные: kstu.ru";
+    const upd = g ? ` · обновлено ${esc(fmtGenerated(g))}` : "";
+    $("#foot").innerHTML =
+      `Данные: <a href="https://www.kstu.ru" target="_blank" rel="noopener">kstu.ru</a>${upd}` +
+      `<br><span class="foot-legal">Неофициальный проект · ` +
+      `<a href="legal.html">Правовая информация</a> · ` +
+      `<a href="privacy.html">Политика ПД</a></span>`;
   }
 
   /* ── Выбор группы ────────────────────────────────────── */

@@ -593,6 +593,40 @@ button { font: inherit; color: inherit; }
 
 .pick-hint b { color: var(--ink); font-size: 14.5px; font-weight: 600; }
 
+/* ── Правовые страницы ─────────────────────────────────── */
+
+.doc { padding-top: 18px; }
+
+.doc .back {
+  display: inline-block;
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.doc .back:hover { color: var(--accent); }
+
+.doc h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.02em; margin: 4px 0 6px; }
+.doc h2 { font-size: 17px; letter-spacing: -.01em; margin: 26px 0 8px; }
+.doc p, .doc li { font-size: 14.5px; line-height: 1.62; color: var(--ink); }
+.doc p { margin: 0 0 10px; }
+.doc ul { margin: 0 0 12px; padding-left: 20px; }
+.doc li { margin-bottom: 5px; }
+.doc a { color: var(--accent); }
+
+.doc code {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+}
+
+.doc .muted { color: var(--muted); font-size: 12.5px; }
+
+.foot-legal { display: inline-block; margin-top: 3px; font-size: 11px; }
+
 /* ── Установка на телефон ──────────────────────────────── */
 
 .install {
