@@ -16,18 +16,7 @@ jobs:
         run: |
           code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 https://www.kstu.ru/ || echo "ERR")
           echo "curl=$code" > probe.txt
-          python3 - >> probe.txt 2>&1 <<'PY'
-import ssl, urllib.request
-ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
-ctx.maximum_version = ssl.TLSVersion.TLSv1_2
-try:
-    r = urllib.request.urlopen("https://www.kstu.ru/", timeout=30, context=ctx)
-    print("python=OK", r.status, len(r.read()))
-except Exception as e:
-    print("python=ERR", type(e).__name__, str(e)[:120])
-PY
+          python3 -c "import ssl,urllib.request; ctx=ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT); ctx.check_hostname=False; ctx.verify_mode=ssl.CERT_NONE; ctx.maximum_version=ssl.TLSVersion.TLSv1_2; r=urllib.request.urlopen('https://www.kstu.ru/',timeout=30,context=ctx); print('python=OK',r.status,len(r.read()))" >> probe.txt 2>&1 || echo "python=ERR" >> probe.txt
           cat probe.txt
 
       - name: Commit
