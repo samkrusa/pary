@@ -1,13 +1,13 @@
 /* Кэш оболочки и расписаний: приложение открывается без сети. */
 
-const VERSION = "pary-v5";
+const VERSION = "pary-v6";
 const SHELL = [
   "./",
   "index.html",
   "legal.html",
   "privacy.html",
-  "style.css",
-  "app.js",
+  "style.css?v=6",
+  "app.js?v=6",
   "icon.svg",
   "icon-180.png",
   "icon-192.png",
@@ -39,7 +39,7 @@ self.addEventListener("fetch", (event) => {
   // Навигация — сначала сеть, при обрыве отдаём оболочку из кэша.
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: "no-cache" })
         .then((res) => {
           const copy = res.clone();
           caches.open(VERSION).then((c) => c.put("index.html", copy));
@@ -55,7 +55,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.open(VERSION).then((cache) =>
         cache.match(req).then((hit) => {
-          const net = fetch(req)
+          const net = fetch(req, { cache: "no-cache" })
             .then((res) => {
               if (res.ok) cache.put(req, res.clone());
               return res;
