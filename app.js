@@ -11,6 +11,8 @@
   const MONTHS_SHORT = ["янв", "фев", "мар", "апр", "мая", "июн",
     "июл", "авг", "сен", "окт", "ноя", "дек"];
 
+  const DESKTOP_MQ = window.matchMedia("(min-width: 1000px)");
+
   const TYPE_STYLE = {
     "ЛЕКЦ": ["#2f5fe0", "#e9efff"],
     "ПЗ": ["#0b7a55", "#dff3ea"],
@@ -362,6 +364,11 @@
       return;
     }
 
+    if (DESKTOP_MQ.matches) {
+      renderWeekGrid(box);
+      return;
+    }
+
     const list = lessonsFor(state.day);
     if (!list.length) {
       box.innerHTML = `
@@ -402,6 +409,55 @@
           </div>
         </article>`;
     }).join("");
+  }
+
+  function slotCard(l, isToday) {
+    const [fg, bg] = typeStyle(l.t);
+    const live = isToday && nowMinutes() >= toMin(l.b) && nowMinutes() <= toMin(l.e);
+    const past = isToday && nowMinutes() > toMin(l.e);
+    const sub = subLabel(l.x);
+    return `
+      <article class="slot${live ? " is-now" : ""}${past ? " is-past" : ""}"
+               style="--type-color:${fg};--type-bg:${bg}">
+        ${live ? '<span class="slot-now">сейчас</span>' : ""}
+        <div class="slot-time"><b>${esc(l.b)}</b><span>${esc(l.e)}</span></div>
+        <div class="slot-subject">${esc(l.n)}</div>
+        <div class="slot-meta">
+          <span class="type">${esc(l.t)}</span>
+          ${l.r ? `<span class="room">${esc(l.r)}</span>` : ""}
+        </div>
+        ${l.p ? `<div class="slot-teacher">${esc(l.p)}</div>` : ""}
+        ${sub ? `<div class="slot-sub">${esc(sub)}</div>` : ""}
+      </article>`;
+  }
+
+  function renderWeekGrid(box) {
+    const mon = currentMonday();
+    const today = isoOf(new Date());
+    const days = Array.from({ length: 7 }, (_, i) => addDays(mon, i));
+    const showSunday = lessonsFor(isoOf(days[6])).length > 0;
+    const count = showSunday ? 7 : 6;
+
+    let html = `<div class="weekgrid" style="--cols:${count}">`;
+    for (let i = 0; i < count; i++) {
+      const d = days[i];
+      const ds = isoOf(d);
+      const list = lessonsFor(ds);
+      const isToday = ds === today;
+      html += `
+        <section class="daycol${isToday ? " is-today" : ""}">
+          <header class="daycol-head">
+            <span class="dow">${DOW[i]}</span>
+            <span class="num">${d.getDate()}</span>
+            <span class="mon">${MONTHS_SHORT[d.getMonth()]}</span>
+          </header>
+          ${list.length
+            ? list.map((l) => slotCard(l, isToday)).join("")
+            : '<div class="daycol-empty">нет пар</div>'}
+        </section>`;
+    }
+    html += "</div>";
+    box.innerHTML = html;
   }
 
   function renderFoot() {
@@ -596,6 +652,9 @@
     });
 
     setupInstall();
+
+    if (DESKTOP_MQ.addEventListener) DESKTOP_MQ.addEventListener("change", render);
+    else if (DESKTOP_MQ.addListener) DESKTOP_MQ.addListener(render);
 
     addEventListener("online", render);
     addEventListener("offline", render);
