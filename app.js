@@ -23,6 +23,18 @@
     "УП": ["#9a3412", "#fdebe0"],
   };
 
+  const BUILDINGS = {
+    "А": { name: "Корпус А", address: "ул. Карла Маркса, 68", lat: 55.7944756, lon: 49.1381967 },
+    "Б": { name: "Корпус Б", address: "ул. Карла Маркса, 72", lat: 55.7939835, lon: 49.1415543 },
+    "В": { name: "Корпус В", address: "ул. Карла Маркса, 72", lat: 55.7939835, lon: 49.1415543 },
+    "О": { name: "Корпус О", address: "ул. Карла Маркса, 72", lat: 55.7939835, lon: 49.1415543 },
+    "Г": { name: "Корпус Г", address: "ул. Попова, 10", lat: 55.8095609, lon: 49.1843710 },
+    "Д": { name: "Корпус Д", address: "Сибирский тракт, 12", lat: 55.8077859, lon: 49.1846024 },
+    "Е": { name: "Корпус Е", address: "Сибирский тракт, 12", lat: 55.8077859, lon: 49.1846024 },
+    "Л": { name: "Корпус Л", address: "Сибирский тракт, 12", lat: 55.8077859, lon: 49.1846024 },
+    "М": { name: "Корпус М", address: "Сибирский тракт, 12", lat: 55.8077859, lon: 49.1846024 },
+  };
+
   const state = {
     meta: null,
     institutes: [],
@@ -259,6 +271,7 @@
     if (off) off.hidden = navigator.onLine;
     renderHeader();
     renderWeek();
+    renderStatus();
     renderDays();
     renderContent();
     renderFoot();
@@ -402,6 +415,7 @@
             <div class="subject">${esc(l.n)}</div>
             <div class="meta">
               <span class="type">${esc(l.t)}</span>
+              ${l.st ? `<span class="status-badge">${esc(l.st)}</span>` : ""}
               ${l.r ? `<span class="room">${esc(l.r)}</span>` : ""}
               ${l.p ? `<span class="teacher">${esc(l.p)}</span>` : ""}
               ${sub ? `<span class="sub">${esc(sub)}</span>` : ""}
@@ -409,6 +423,8 @@
           </div>
         </article>`;
     }).join("");
+
+    box.querySelectorAll(".lesson").forEach((el, i) => bindLesson(el, list[i], state.day));
   }
 
   function slotCard(l, isToday) {
@@ -424,6 +440,7 @@
         <div class="slot-subject">${esc(l.n)}</div>
         <div class="slot-meta">
           <span class="type">${esc(l.t)}</span>
+          ${l.st ? `<span class="status-badge">${esc(l.st)}</span>` : ""}
           ${l.r ? `<span class="room">${esc(l.r)}</span>` : ""}
         </div>
         ${l.p ? `<div class="slot-teacher">${esc(l.p)}</div>` : ""}
@@ -445,7 +462,7 @@
       const list = lessonsFor(ds);
       const isToday = ds === today;
       html += `
-        <section class="daycol${isToday ? " is-today" : ""}">
+        <section class="daycol${isToday ? " is-today" : ""}" data-date="${ds}">
           <header class="daycol-head">
             <span class="dow">${DOW[i]}</span>
             <span class="num">${d.getDate()}</span>
@@ -458,6 +475,139 @@
     }
     html += "</div>";
     box.innerHTML = html;
+
+    box.querySelectorAll(".daycol").forEach((col) => {
+      const ds = col.dataset.date;
+      const items = lessonsFor(ds);
+      col.querySelectorAll(".slot").forEach((el, i) => bindLesson(el, items[i], ds));
+    });
+  }
+
+  function buildingFor(room) {
+    if (!room) return null;
+    const m = room.match(/^\s*([А-ЯЁ])-/);
+    const letter = m ? m[1] : (/круглый/i.test(room) ? "А" : null);
+    return letter ? BUILDINGS[letter] || null : null;
+  }
+
+  function mapUrl(b) {
+    return "https://yandex.ru/maps/?ll=" + b.lon + "%2C" + b.lat +
+      "&pt=" + b.lon + "%2C" + b.lat + ",pm2rdm&z=17&l=map";
+  }
+
+  function fmtDay(iso) {
+    const d = parseISO(iso);
+    return d.getDate() + " " + MONTHS[d.getMonth()];
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (_) { /* fallback */ }
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.cssText = "position:fixed;top:0;left:-9999px;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function bindLesson(el, l, dateStr) {
+    if (!l) return;
+    el.tabIndex = 0;
+    el.setAttribute("role", "button");
+    el.setAttribute("aria-label", l.b + " " + l.n + (l.r ? ", аудитория " + l.r : ""));
+    el.addEventListener("click", () => openLesson(l, dateStr));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openLesson(l, dateStr);
+      }
+    });
+  }
+
+  function openLesson(l, dateStr) {
+    const dt = parseISO(dateStr);
+    const dow = DOW[(dt.getDay() + 6) % 7];
+    const dateLabel = dow + ", " + dt.getDate() + " " + MONTHS[dt.getMonth()];
+    const [fg, bg] = typeStyle(l.t);
+    const b = buildingFor(l.r);
+    const sub = subLabel(l.x);
+    const parity = l.w === 0 ? "каждую неделю" : l.w === 1 ? "нечётная неделя" : "чётная неделя";
+    const status = l.st ? `<span class="status-badge">${esc(l.st)}</span>` : "";
+    const map = b
+      ? `<a class="lm-btn" href="${mapUrl(b)}" target="_blank" rel="noopener">Открыть на карте</a>`
+      : "";
+
+    $("#lessonBody").innerHTML = `
+      <h2 class="lm-title" id="lessonTitle">${esc(l.n)}</h2>
+      <div class="lm-sub">
+        <span class="type" style="--type-color:${fg};--type-bg:${bg}">${esc(l.t)}</span>
+        ${status}
+        <span>${esc(dateLabel)} · ${esc(l.b)}–${esc(l.e)}</span>
+      </div>
+      <dl class="lm-rows">
+        ${l.r ? `<div class="lm-row"><dt>Аудитория</dt><dd>${esc(l.r)}</dd></div>` : ""}
+        ${b ? `<div class="lm-row"><dt>Корпус</dt><dd>${esc(b.name)}, ${esc(b.address)}</dd></div>` : ""}
+        ${l.p ? `<div class="lm-row"><dt>Преподаватель</dt><dd>${esc(l.p)}</dd></div>` : ""}
+        ${sub ? `<div class="lm-row"><dt>Подгруппа</dt><dd>${esc(sub)}</dd></div>` : ""}
+        <div class="lm-row"><dt>Период</dt><dd>${esc(fmtDay(l.f))} – ${esc(fmtDay(l.u))}</dd></div>
+        <div class="lm-row"><dt>Неделя</dt><dd>${parity}</dd></div>
+        <div class="lm-row"><dt>Статус</dt><dd>${l.st ? esc(l.st) : "по данным сайта КНИТУ"}</dd></div>
+      </dl>
+      <div class="lm-actions">
+        ${l.r ? '<button class="lm-btn is-primary" type="button" id="lmCopyRoom">Скопировать аудиторию</button>' : ""}
+        ${map}
+      </div>
+      <p class="lm-note">Если аудиторию перенесли, уточни её в деканате: данные обновляются с сайта КНИТУ автоматически.</p>
+    `;
+
+    const modal = $("#lessonModal");
+    modal._lastFocus = document.activeElement;
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+    const card = modal.querySelector(".modal-card");
+    if (card) card.focus();
+
+    const btn = $("#lmCopyRoom");
+    if (btn) {
+      btn.addEventListener("click", async () => {
+        const ok = await copyText(l.r);
+        toast(ok ? "Аудитория скопирована" : "Не удалось скопировать");
+      });
+    }
+  }
+
+  function closeLesson() {
+    const modal = $("#lessonModal");
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = "";
+    const back = modal._lastFocus;
+    if (back && typeof back.focus === "function") back.focus();
+  }
+
+  function renderStatus() {
+    const el = $("#updated");
+    const g = state.meta && state.meta.generated;
+    if (!g) { el.hidden = true; return; }
+    const d = new Date(g);
+    if (Number.isNaN(d.getTime())) { el.hidden = true; return; }
+    const hours = (Date.now() - d.getTime()) / 3600000;
+    const stale = hours > 48;
+    el.hidden = false;
+    el.classList.toggle("is-stale", stale);
+    el.querySelector("span").textContent =
+      "Обновлено " + d.getDate() + " " + MONTHS[d.getMonth()] + ", " +
+      pad(d.getHours()) + ":" + pad(d.getMinutes()) +
+      (stale ? " · данные могли устареть" : "");
   }
 
   function renderFoot() {
@@ -647,6 +797,10 @@
       renderGroupList();
     });
 
+    $("#lessonModal").addEventListener("click", (e) => {
+      if (e.target.closest("[data-lesson-close]")) closeLesson();
+    });
+
     $("#sheet").addEventListener("click", (e) => {
       if (e.target.closest("[data-close]")) closeSheet();
     });
@@ -662,6 +816,7 @@
     document.addEventListener("keydown", trapFocus);
 
     document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !$("#lessonModal").hidden) closeLesson();
       if (e.key === "Escape" && !$("#sheet").hidden) closeSheet();
       if (e.target.matches("input, textarea")) return;
       if (e.key === "ArrowLeft") setWeek(-1);

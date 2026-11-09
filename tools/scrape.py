@@ -207,6 +207,17 @@ def parse_cell(text):
 
     if cur:
         lessons.append(cur)
+
+    low = text.lower()
+    if "отмен" in low:
+        status = "Отменено"
+    elif "перенос" in low:
+        status = "Перенесено"
+    else:
+        status = ""
+    for l in lessons:
+        l["st"] = status
+
     return [l for l in lessons if l["n"] and l["f"] and l["u"]]
 
 
@@ -261,7 +272,7 @@ def fetch_grid(f, k, date, cache_dir, refresh=False):
 def merge_lessons(odd, even):
     """Склеивает занятия чётной и нечётной недели."""
     key = lambda l: (l["d"], l["b"], l["e"], l["r"], l["n"], l["t"],
-                     l["p"], l["f"], l["u"], l["x"])
+                     l["p"], l["f"], l["u"], l["x"], l.get("st", ""))
     odd_map = {key(l): l for l in odd}
     even_map = {key(l): l for l in even}
     out = []
@@ -407,7 +418,7 @@ def main():
     os.makedirs(i_dir, exist_ok=True)
     anchor_date = even_date if p_even == 2 else odd_date
     meta = {
-        "generated": dt.datetime.now().isoformat(timespec="seconds"),
+        "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "semester": "1 семестр 2026-2027",
         "anchor": anchor_date.isoformat(),
         "anchorEven": ANCHOR_EVEN,

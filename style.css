@@ -397,7 +397,9 @@ button { font: inherit; color: inherit; }
 
 @keyframes blink { 50% { opacity: .25; } }
 
-.lesson.is-past { opacity: .58; }
+.lesson.is-past { opacity: 1; }
+.lesson.is-past .subject { opacity: .55; }
+.lesson.is-past .meta { opacity: .85; }
 .lesson.is-past::before { background: var(--line); }
 
 /* ── Пустое состояние ─────────────────────────────────── */
@@ -742,7 +744,10 @@ button { font: inherit; color: inherit; }
   }
 
   .slot.is-now::before { background: var(--amber); }
-  .slot.is-past { opacity: .55; }
+  .slot.is-past { opacity: 1; }
+  .slot.is-past .slot-subject,
+  .slot.is-past .slot-teacher,
+  .slot.is-past .slot-sub { opacity: .55; }
   .slot.is-past::before { background: var(--line); }
 
   .slot-now {
@@ -767,6 +772,197 @@ button { font: inherit; color: inherit; }
   .slot-subject { font-size: 12.6px; }
   .slot-teacher { font-size: 10.5px; }
   .daycol-head .num { font-size: 18px; }
+}
+
+
+/* ── Актуальность данных ───────────────────────────────── */
+
+.updated {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.updated i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex: none;
+}
+
+.updated.is-stale { color: var(--amber); }
+.updated.is-stale i { background: var(--amber); }
+
+/* ── Кликабельные занятия ──────────────────────────────── */
+
+.lesson, .slot { cursor: pointer; }
+
+.lesson { transition: border-color .15s ease, transform .12s ease; }
+.lesson:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.lesson:active { transform: scale(.995); }
+
+.slot { transition: border-color .15s ease, transform .12s ease; }
+.slot:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+
+.lesson:focus-visible, .slot:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .02em;
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  white-space: nowrap;
+}
+
+/* ── Карточка занятия ──────────────────────────────────── */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal[hidden] { display: none !important; }
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 18, .5);
+  animation: fade .2s ease both;
+}
+
+.modal-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 88dvh;
+  overflow-y: auto;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -12px 44px -14px rgba(0, 0, 0, .45);
+  animation: modal-in .26s cubic-bezier(.22, .8, .3, 1) both;
+}
+
+@keyframes modal-in {
+  from { transform: translateY(18px); opacity: .5; }
+  to { transform: none; opacity: 1; }
+}
+
+@media (min-width: 700px) {
+  .modal { align-items: center; padding: 24px; }
+  .modal-card {
+    border-radius: 22px;
+    max-height: 80vh;
+    padding-bottom: 18px;
+    box-shadow: 0 24px 70px -20px rgba(0, 0, 0, .5);
+  }
+}
+
+.modal-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.lm-title {
+  margin: 0 34px 4px 0;
+  font-size: 19px;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -.02em;
+}
+
+.lm-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.lm-rows {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 2px;
+}
+
+.lm-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.lm-row dt { color: var(--muted); flex: none; }
+.lm-row dd { margin: 0; text-align: right; font-weight: 500; overflow-wrap: anywhere; }
+
+.lm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.lm-btn {
+  flex: 1 1 auto;
+  min-width: 150px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.lm-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.lm-btn.is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.lm-btn.is-primary:hover { filter: brightness(1.05); color: var(--accent-ink); }
+
+.lm-note {
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 /* ── Правовые страницы ─────────────────────────────────── */

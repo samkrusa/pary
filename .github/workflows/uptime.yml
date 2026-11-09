@@ -20,7 +20,7 @@ jobs:
         id: check
         run: |
           fail=0
-          for url in "https://samkrusa.github.io/pary/" "https://pary-knrtu.pages.dev/"; do
+          for url in "https://samkrusa.github.io/pary/"; do
             code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "$url" || echo "ERR")
             echo "$url -> $code"
             echo "| $url | $code |" >> "$GITHUB_STEP_SUMMARY"
