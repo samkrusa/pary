@@ -1,13 +1,13 @@
 /* Кэш оболочки и расписаний: приложение открывается без сети. */
 
-const VERSION = "pary-v7";
+const VERSION = "pary-v8";
 const SHELL = [
   "./",
   "index.html",
   "legal.html",
   "privacy.html",
-  "style.css?v=7",
-  "app.js?v=7",
+  "style.css?v=8",
+  "app.js?v=8",
   "icon.svg",
   "icon-180.png",
   "icon-192.png",

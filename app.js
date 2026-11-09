@@ -560,13 +560,13 @@
         ${sub ? `<div class="lm-row"><dt>Подгруппа</dt><dd>${esc(sub)}</dd></div>` : ""}
         <div class="lm-row"><dt>Период</dt><dd>${esc(fmtDay(l.f))} – ${esc(fmtDay(l.u))}</dd></div>
         <div class="lm-row"><dt>Неделя</dt><dd>${parity}</dd></div>
-        <div class="lm-row"><dt>Статус</dt><dd>${l.st ? esc(l.st) : "по данным сайта КНИТУ"}</dd></div>
+        <div class="lm-row"><dt>Статус</dt><dd>${l.st ? esc(l.st) : "не отмечено"}</dd></div>
       </dl>
       <div class="lm-actions">
         ${l.r ? '<button class="lm-btn is-primary" type="button" id="lmCopyRoom">Скопировать аудиторию</button>' : ""}
         ${map}
       </div>
-      <p class="lm-note">Если аудиторию перенесли, уточни её в деканате: данные обновляются с сайта КНИТУ автоматически.</p>
+      <p class="lm-note">Если вуз укажет отмену или перенос в расписании, здесь появится отметка. Аудиторию всегда стоит сверять с деканатом.</p>
     `;
 
     const modal = $("#lessonModal");
